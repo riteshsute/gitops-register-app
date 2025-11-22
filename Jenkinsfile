@@ -28,18 +28,30 @@ pipeline {
         }
 
         stage("Push the changed deployment file to Git") {
-            steps {
+    steps {
+        script {
+
+            sh """
+               git config --global user.name "riteshsute"
+               git config --global user.email "suteritesh@gmail.com"
+               git pull origin work --rebase
+               git add deployment.yaml
+               git commit -m "Updated Deployment Manifest" || echo "No changes to commit"
+            """
+
+            withCredentials([usernamePassword(
+                credentialsId: 'github',
+                usernameVariable: 'GIT_USER',
+                passwordVariable: 'GIT_PASS'
+            )]) {
                 sh """
-                   git config --global user.name "riteshsute"
-                   git config --global user.email "suteritesh@gmail.com"
-                   git add deployment.yaml
-                   git commit -m "Updated Deployment Manifest"
+                    git push https://${GIT_USER}:${GIT_PASS}@github.com/riteshsute/gitops-register-app.git work
                 """
-                withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
-                  sh "git push https://github.com/riteshsute/gitops-register-app work"
-                }
             }
         }
+    }
+}
+
       
     }
 }
