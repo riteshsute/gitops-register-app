@@ -28,30 +28,41 @@ pipeline {
         }
 
         stage("Push the changed deployment file to Git") {
-    steps {
-        script {
-
-            sh """
-               git config --global user.name "riteshsute"
-               git config --global user.email "suteritesh@gmail.com"
-               git pull origin work --rebase
-               git add deployment.yaml
-               git commit -m "Updated Deployment Manifest" || echo "No changes to commit"
-            """
-
-            withCredentials([usernamePassword(
-                credentialsId: 'github',
-                usernameVariable: 'GIT_USER',
-                passwordVariable: 'GIT_PASS'
-            )]) {
-
-                sh """
-                    git push https://${GIT_USER}:${GIT_PASS}@github.com/riteshsute/gitops-register-app.git HEAD:work
-                """
+            steps {
+                script {
+        
+                    sh """
+                        git config --global user.email "suteritesh@gmail.com"
+                        git config --global user.name "riteshsute"
+        
+                        # stash local changes so pull won’t fail
+                        git stash
+        
+                        # pull latest branch changes
+                        git pull origin work --rebase
+        
+                        # apply stashed deployment.yaml changes
+                        git stash pop || true
+        
+                        git add deployment.yaml
+                        git commit -m "Updated Deployment Manifest" || true
+                    """
+        
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_PASS'
+                    )]) {
+        
+                        sh """
+                            git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/riteshsute/gitops-register-app.git
+                            git push origin HEAD:work
+                        """
+                    }
+                }
             }
         }
-    }
-}
+
 
 
       
