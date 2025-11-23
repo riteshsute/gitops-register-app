@@ -44,13 +44,15 @@ pipeline {
                 usernameVariable: 'GIT_USER',
                 passwordVariable: 'GIT_PASS'
             )]) {
+
                 sh """
-                    git push https://${GIT_USER}:${GIT_PASS}@github.com/riteshsute/gitops-register-app.git work
+                    git push https://${GIT_USER}:${GIT_PASS}@github.com/riteshsute/gitops-register-app.git HEAD:work
                 """
             }
         }
     }
 }
+
 
       
     }
